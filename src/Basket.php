@@ -11,8 +11,13 @@ final class Basket
      */
     private array $items = [];
 
+    /**
+     * @param OfferInterface[] $offers
+     */
     public function __construct(
-        private readonly ProductCatalogue $productCatalogue
+        private readonly ProductCatalogue $productCatalogue,
+        private readonly DeliveryCalculator $deliveryCalculator,
+        private readonly array $offers = []
     ) {
     }
 
@@ -23,17 +28,51 @@ final class Basket
 
     public function total(): string
     {
-        $subtotalInCents = 0;
+        $subtotalInMills = $this->subtotalInMills();
+        $discountInMills = $this->discountInMills();
 
-        foreach ($this->items as $item) {
-            $subtotalInCents += $item->priceInCents;
-        }
+        $discountedSubtotalInMills = $subtotalInMills - $discountInMills;
 
-        return $this->formatCents($subtotalInCents);
+        $deliveryInCents = $this->deliveryCalculator->calculate(
+            $this->millsToCents($discountedSubtotalInMills)
+        );
+
+        $totalInMills = $discountedSubtotalInMills + ($deliveryInCents * 10);
+
+        return $this->formatMills($totalInMills);
     }
 
-    private function formatCents(int $amountInCents): string
+    private function subtotalInMills(): int
     {
+        $subtotalInMills = 0;
+
+        foreach ($this->items as $item) {
+            $subtotalInMills += $item->priceInCents * 10;
+        }
+
+        return $subtotalInMills;
+    }
+
+    private function discountInMills(): int
+    {
+        $discountInMills = 0;
+
+        foreach ($this->offers as $offer) {
+            $discountInMills += $offer->discountInMills($this->items);
+        }
+
+        return $discountInMills;
+    }
+
+    private function millsToCents(int $amountInMills): int
+    {
+        return intdiv($amountInMills, 10);
+    }
+
+    private function formatMills(int $amountInMills): string
+    {
+        $amountInCents = $this->millsToCents($amountInMills);
+
         return '$' . number_format($amountInCents / 100, 2);
     }
 }
