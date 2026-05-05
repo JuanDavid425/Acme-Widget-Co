@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 final class BasketTest extends TestCase
 {
-    public function test_it_adds_products_and_calculates_total_with_delivery(): void
+    public function test_example_basket_with_blue_and_green_widgets(): void
     {
         $basket = $this->basket();
 
@@ -22,6 +22,39 @@ final class BasketTest extends TestCase
         $basket->add('G01');
 
         $this->assertSame('$37.85', $basket->total());
+    }
+
+    public function test_example_basket_with_two_red_widgets(): void
+    {
+        $basket = $this->basket();
+
+        $basket->add('R01');
+        $basket->add('R01');
+
+        $this->assertSame('$54.37', $basket->total());
+    }
+
+    public function test_example_basket_with_red_and_green_widgets(): void
+    {
+        $basket = $this->basket();
+
+        $basket->add('R01');
+        $basket->add('G01');
+
+        $this->assertSame('$60.85', $basket->total());
+    }
+
+    public function test_example_basket_with_blue_blue_red_red_red_widgets(): void
+    {
+        $basket = $this->basket();
+
+        $basket->add('B01');
+        $basket->add('B01');
+        $basket->add('R01');
+        $basket->add('R01');
+        $basket->add('R01');
+
+        $this->assertSame('$98.27', $basket->total());
     }
 
     public function test_it_throws_exception_when_adding_unknown_product_code(): void
